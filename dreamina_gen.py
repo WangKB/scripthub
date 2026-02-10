@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import os
 import argparse
-import urllib.request
 import base64
+import requests
 from volcengine.visual.VisualService import VisualService
 
 def main():
@@ -92,8 +92,17 @@ def main():
     if "data" in resp and "image_urls" in resp["data"] and len(resp["data"]["image_urls"]) > 0:
         image_url = resp["data"]["image_urls"][0]
         print(f"图片生成成功，正在下载...")
-        urllib.request.urlretrieve(image_url, args.output)
-        print(f"图片已保存到: {args.output}")
+        
+        # 直接下载图片内容
+        response = requests.get(image_url, timeout=60)
+        
+        # 保存到文件
+        with open(args.output, 'wb') as f:
+            f.write(response.content)
+        
+        # 验证文件大小
+        file_size = os.path.getsize(args.output)
+        print(f"图片已保存到: {args.output} (大小: {file_size:,} bytes)")
     else:
         print("生成失败，响应内容:")
         import json
